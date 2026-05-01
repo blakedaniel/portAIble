@@ -10,6 +10,9 @@ const { showError, showSuccess } = useErrorToast()
 const md = new MarkdownIt({ html: false, linkify: true, breaks: false })
 
 const building = ref(false)
+const editing = ref(false)
+const draft = ref('')
+const saving = ref(false)
 
 const { data: session, refresh } = await useAsyncData(
   `session:${sid}:prompt`, () => api.getSession(sid),
@@ -19,6 +22,13 @@ const renderedHtml = computed(() =>
   session.value?.assembled_prompt
     ? md.render(session.value.assembled_prompt.instructions)
     : '',
+)
+
+const lockedStatuses = ['pipeline_submitted', 'pipeline_completed']
+const editable = computed(
+  () =>
+    !!session.value?.assembled_prompt &&
+    !lockedStatuses.includes(session.value.status),
 )
 
 async function build() {
@@ -31,6 +41,30 @@ async function build() {
     showError(e, 'Could not build prompt')
   } finally {
     building.value = false
+  }
+}
+
+function startEdit() {
+  draft.value = session.value?.assembled_prompt?.instructions ?? ''
+  editing.value = true
+}
+
+function cancelEdit() {
+  editing.value = false
+  draft.value = ''
+}
+
+async function save() {
+  saving.value = true
+  try {
+    await api.updatePromptInstructions(sid, draft.value)
+    await refresh()
+    editing.value = false
+    showSuccess('Prompt saved')
+  } catch (e) {
+    showError(e, 'Could not save prompt')
+  } finally {
+    saving.value = false
   }
 }
 
@@ -54,8 +88,16 @@ async function submit() {
 
       <div v-if="session?.assembled_prompt">
         <div
+          v-if="!editing"
           class="prose-prompt bg-neutral-900 text-neutral-100 p-4 rounded max-h-[60vh] overflow-auto"
           v-html="renderedHtml"
+        />
+        <UTextarea
+          v-else
+          v-model="draft"
+          :rows="20"
+          class="font-mono text-sm w-full"
+          :ui="{ base: 'font-mono text-sm' }"
         />
         <p class="text-xs text-neutral-500 mt-2">
           Source ZIP: <code>{{ session.assembled_prompt.source_zip_path }}</code>
@@ -64,9 +106,17 @@ async function submit() {
       <UAlert v-else color="neutral" title="No prompt yet — click Build." />
 
       <template #footer>
-        <div class="flex gap-2">
+        <div v-if="!editing" class="flex gap-2 flex-wrap">
           <UButton variant="ghost" :to="`/sessions/${sid}`">Back</UButton>
           <UButton color="primary" icon="i-lucide-hammer" :loading="building" label="Build prompt" @click="build" />
+          <UButton
+            v-if="editable"
+            color="neutral"
+            variant="outline"
+            icon="i-lucide-pencil"
+            label="Edit prompt"
+            @click="startEdit"
+          />
           <UButton
             v-if="session?.assembled_prompt"
             color="green"
@@ -74,6 +124,17 @@ async function submit() {
             label="Submit to AI Pipeline"
             @click="submit"
           />
+        </div>
+        <div v-else class="flex gap-2 flex-wrap">
+          <UButton
+            color="primary"
+            icon="i-lucide-save"
+            :loading="saving"
+            :disabled="!draft.trim()"
+            label="Save"
+            @click="save"
+          />
+          <UButton variant="ghost" icon="i-lucide-x" label="Cancel" @click="cancelEdit" />
         </div>
       </template>
     </UCard>

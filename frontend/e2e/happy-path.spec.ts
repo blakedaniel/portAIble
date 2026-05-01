@@ -180,4 +180,23 @@ test('full porting workflow up to assembled prompt', async ({ page }) => {
   await expect(prompt).toContainText(/Design Decisions/i)
   // Markdown actually rendered (not raw '###'): a real <h3> exists inside the prose container.
   await expect(prompt.locator('h3').first()).toBeVisible()
+
+  // Edit-mode: open editor, replace contents with a sentinel, save, confirm rerender.
+  await page.locator('button', { hasText: /^Edit prompt$/ }).click()
+  const editor = page.locator('textarea')
+  await expect(editor).toBeVisible()
+  // While editing, the Submit and Build buttons must be hidden so an unsaved
+  // edit can't accidentally ship.
+  await expect(page.locator('button', { hasText: /Submit to AI Pipeline/ })).toHaveCount(0)
+  await expect(page.locator('button', { hasText: /Build prompt/ })).toHaveCount(0)
+
+  await editor.fill('# Edited!\n\nMy custom override of the assembled prompt.')
+  await page.locator('button', { hasText: /^Save$/ }).click()
+
+  // Back in view mode, the edit should be rendered as a real <h1>.
+  await expect(page.locator('.prose-prompt h1', { hasText: 'Edited!' })).toBeVisible({ timeout: 10_000 })
+
+  // And it survives a reload — the edit was persisted server-side.
+  await page.reload()
+  await expect(page.locator('.prose-prompt h1', { hasText: 'Edited!' })).toBeVisible({ timeout: 10_000 })
 })

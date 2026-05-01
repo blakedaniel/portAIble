@@ -150,6 +150,8 @@ export const useApi = () => {
 
     buildPrompt: (sid: string) => $post<Session>(`/api/sessions/${sid}/prompt/build`),
     getPrompt: (sid: string) => $get<AssembledPrompt>(`/api/sessions/${sid}/prompt`),
+    updatePromptInstructions: (sid: string, instructions: string) =>
+      $put<Session>(`/api/sessions/${sid}/prompt`, { instructions }),
 
     submitPipeline: (sid: string) => $post<Session>(`/api/sessions/${sid}/pipeline/submit`),
     pollPipeline: (sid: string) => $get<PipelineJob>(`/api/sessions/${sid}/pipeline/status`),
