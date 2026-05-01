@@ -7,3 +7,8 @@ dist
 .env
 .env.local
 app/api/generated
+
+# Playwright
+test-results
+playwright-report
+playwright/.cache
