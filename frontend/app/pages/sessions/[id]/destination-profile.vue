@@ -30,7 +30,7 @@ async function save() {
 async function confirm() {
   await save()
   await api.confirmDestination(sid)
-  await router.push(`/sessions/${sid}/prompt`)
+  await router.push(`/sessions/${sid}/decisions`)
 }
 </script>
 

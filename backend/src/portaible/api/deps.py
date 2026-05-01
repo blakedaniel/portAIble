@@ -13,7 +13,9 @@ from ..domain import ExtractionKind
 from ..infrastructure.db import session_scope
 from ..infrastructure.extractors.zip_extractor import ZipExtractor
 from ..infrastructure.llm.dspy_analyzer import DSPySourceAnalyzer
+from ..infrastructure.llm.dspy_decisions import DSPyDesignDecisions
 from ..infrastructure.llm.fake_analyzer import FakeSourceAnalyzer
+from ..infrastructure.llm.fake_decisions import FakeDesignDecisions
 from ..infrastructure.pipeline.http_pipeline import HttpAIPipeline
 from ..infrastructure.prompt_bank.filesystem_bank import FilesystemPromptBank
 from ..infrastructure.repos.sqlite_job_repo import SqliteJobRepository
@@ -21,6 +23,7 @@ from ..infrastructure.repos.sqlite_session_repo import SqliteSessionRepository
 from ..jobs import JobRegistry
 from ..ports import (
     AIPipelinePort,
+    DesignDecisionsPort,
     JobRepositoryPort,
     PromptBankPort,
     SessionRepositoryPort,
@@ -57,6 +60,11 @@ def get_extractors() -> dict[ExtractionKind, SourceExtractorPort]:
 def get_source_analyzer() -> SourceAnalyzerPort:
     """Real DSPy analyzer in production; FakeSourceAnalyzer when USE_FAKE_ANALYZER=true."""
     return FakeSourceAnalyzer() if _USE_FAKE_ANALYZER else DSPySourceAnalyzer()
+
+
+def get_design_decisions() -> DesignDecisionsPort:
+    """Real DSPy decision generator in production; Fake when USE_FAKE_ANALYZER=true."""
+    return FakeDesignDecisions() if _USE_FAKE_ANALYZER else DSPyDesignDecisions()
 
 
 def get_job_registry() -> JobRegistry:

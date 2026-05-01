@@ -9,6 +9,7 @@ const steps = computed(() => [
   { key: 'analyze', label: 'Analyze (Phase 1: fake)', done: ['analyzed','source_profile_confirmed','destination_profile_confirmed','decisions_answered','prompt_built','pipeline_submitted','pipeline_completed','pipeline_failed'].includes(session.value?.status ?? '') },
   { key: 'source-profile', label: 'Confirm source profile', done: ['source_profile_confirmed','destination_profile_confirmed','decisions_answered','prompt_built','pipeline_submitted','pipeline_completed','pipeline_failed'].includes(session.value?.status ?? '') },
   { key: 'destination-profile', label: 'Confirm destination profile', done: ['destination_profile_confirmed','decisions_answered','prompt_built','pipeline_submitted','pipeline_completed','pipeline_failed'].includes(session.value?.status ?? '') },
+  { key: 'decisions', label: 'Answer design decisions', done: ['decisions_answered','prompt_built','pipeline_submitted','pipeline_completed','pipeline_failed'].includes(session.value?.status ?? '') },
   { key: 'prompt', label: 'Build prompt', done: ['prompt_built','pipeline_submitted','pipeline_completed','pipeline_failed'].includes(session.value?.status ?? '') },
   { key: 'pipeline', label: 'Run AI Pipeline', done: ['pipeline_completed'].includes(session.value?.status ?? '') },
 ])

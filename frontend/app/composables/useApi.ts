@@ -43,6 +43,26 @@ export interface AssembledPrompt {
   source_zip_path: string
 }
 
+export interface DecisionOption {
+  id: string
+  label: string
+  description: string
+}
+
+export interface DesignDecision {
+  id: string
+  question: string
+  options: DecisionOption[]
+  allow_freeform: boolean
+  rationale: string
+}
+
+export interface DecisionAnswer {
+  decision_id: string
+  selected_option_id: string | null
+  freeform_answer: string | null
+}
+
 export interface Session {
   id: string
   status: SessionStatus
@@ -118,6 +138,12 @@ export const useApi = () => {
       $put<Session>(`/api/sessions/${sid}/profiles/source`, profile),
     putDestination: (sid: string, profile: DestinationProfile) =>
       $put<Session>(`/api/sessions/${sid}/profiles/destination`, profile),
+
+    generateDecisions: (sid: string) =>
+      $post<{ job_id: string }>(`/api/sessions/${sid}/decisions/generate`),
+    getDecisions: (sid: string) => $get<DesignDecision[]>(`/api/sessions/${sid}/decisions`),
+    submitDecisionAnswers: (sid: string, answers: DecisionAnswer[]) =>
+      $put<Session>(`/api/sessions/${sid}/decisions/answers`, { answers }),
 
     buildPrompt: (sid: string) => $post<Session>(`/api/sessions/${sid}/prompt/build`),
     getPrompt: (sid: string) => $get<AssembledPrompt>(`/api/sessions/${sid}/prompt`),

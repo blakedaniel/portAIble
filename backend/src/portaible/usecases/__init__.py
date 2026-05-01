@@ -3,6 +3,7 @@
 from .analyze_source import AnalyzeSourceUseCase
 from .build_prompt import BuildPromptUseCase
 from .create_session import CreateSessionUseCase
+from .decisions import GenerateDesignDecisionsUseCase, SubmitDesignAnswersUseCase
 from .extract_source import ExtractSourceUseCase
 from .profiles import (
     ConfirmDestinationProfileUseCase,
@@ -25,7 +26,9 @@ __all__ = [
     "CreateSessionUseCase",
     "ExtractSourceUseCase",
     "FetchPipelineResultUseCase",
+    "GenerateDesignDecisionsUseCase",
     "PollPipelineUseCase",
+    "SubmitDesignAnswersUseCase",
     "SubmitToPipelineUseCase",
     "SuggestDestinationUseCase",
     "UpdateDestinationProfileUseCase",
