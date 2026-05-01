@@ -3,6 +3,7 @@ const route = useRoute()
 const router = useRouter()
 const sid = route.params.id as string
 const api = useApi()
+const { showError } = useErrorToast()
 
 const tab = ref<'zip' | 'github'>('zip')
 
@@ -33,7 +34,7 @@ async function uploadZip() {
     await api.uploadZip(sid, file.value)
     await router.push(`/sessions/${sid}`)
   } catch (e: any) {
-    error.value = e?.data?.detail ?? e?.message ?? String(e)
+    error.value = showError(e, 'ZIP upload failed')
   } finally {
     uploading.value = false
   }
@@ -62,7 +63,7 @@ async function cloneGithub() {
     ghPat.value = ''
     await pollClone(r.job_id)
   } catch (e: any) {
-    error.value = e?.data?.detail ?? e?.message ?? String(e)
+    error.value = showError(e, 'GitHub clone failed')
     cloning.value = false
   }
 }

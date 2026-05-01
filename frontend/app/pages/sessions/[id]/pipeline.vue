@@ -2,6 +2,7 @@
 const route = useRoute()
 const api = useApi()
 const sessionId = route.params.id as string
+const { showError } = useErrorToast()
 
 const status = ref<string>('pending')
 const progress = ref<number>(0)
@@ -19,6 +20,9 @@ async function poll() {
     progress.value = r.progress_percentage
     message.value = r.progress_message
     errorMsg.value = r.error
+    if (r.status === 'failed') {
+      showError(r.error ?? 'AI Pipeline failed', 'Pipeline failed')
+    }
     if (r.status === 'completed' || r.status === 'failed') {
       polling.value = false
       return
@@ -28,6 +32,7 @@ async function poll() {
     timer = setTimeout(poll, intervalSec.value * 1000)
   } catch (e: any) {
     errorMsg.value = e?.message || 'Polling error'
+    showError(e, 'Lost connection to backend while polling')
     polling.value = false
   }
 }

@@ -3,9 +3,9 @@ const route = useRoute()
 const router = useRouter()
 const sid = route.params.id as string
 const api = useApi()
+const { showError, showSuccess } = useErrorToast()
 
 const building = ref(false)
-const error = ref<string | null>(null)
 
 const { data: session, refresh } = await useAsyncData(
   `session:${sid}:prompt`, () => api.getSession(sid),
@@ -13,20 +13,24 @@ const { data: session, refresh } = await useAsyncData(
 
 async function build() {
   building.value = true
-  error.value = null
   try {
     await api.buildPrompt(sid)
     await refresh()
-  } catch (e: any) {
-    error.value = e?.data?.detail ?? e?.message ?? String(e)
+    showSuccess('Prompt built')
+  } catch (e) {
+    showError(e, 'Could not build prompt')
   } finally {
     building.value = false
   }
 }
 
 async function submit() {
-  await api.submitPipeline(sid)
-  await router.push(`/sessions/${sid}/pipeline`)
+  try {
+    await api.submitPipeline(sid)
+    await router.push(`/sessions/${sid}/pipeline`)
+  } catch (e) {
+    showError(e, 'Could not submit to AI Pipeline')
+  }
 }
 </script>
 
@@ -37,8 +41,6 @@ async function submit() {
         <h1 class="text-xl font-semibold">Assembled prompt</h1>
         <p class="text-sm text-neutral-500">Build the final prompt and ship it to the AI Pipeline.</p>
       </template>
-
-      <div v-if="error" class="text-sm text-red-600 mb-2">{{ error }}</div>
 
       <div v-if="session?.assembled_prompt">
         <pre class="text-xs whitespace-pre-wrap bg-neutral-900 text-neutral-100 p-4 rounded max-h-[60vh] overflow-auto">{{ session.assembled_prompt.instructions }}</pre>
