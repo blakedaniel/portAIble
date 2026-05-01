@@ -1,0 +1,27 @@
+{
+  "name": "portaible-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "gen:api": "openapi-typescript-codegen --input ../openapi.json --output app/api/generated --client fetch"
+  },
+  "dependencies": {
+    "nuxt": "^4.0.0",
+    "@nuxt/ui": "^3.0.0",
+    "pinia": "^2.2.0",
+    "@pinia/nuxt": "^0.5.0",
+    "vue": "^3.5.0",
+    "vue-router": "^4.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "openapi-typescript-codegen": "^0.29.0",
+    "@iconify-json/lucide": "^1.2.0"
+  }
+}
