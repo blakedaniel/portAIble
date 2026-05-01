@@ -36,44 +36,22 @@ async function confirm() {
       </template>
 
       <div class="space-y-4">
-        <details open>
-          <summary class="font-medium">Languages</summary>
-          <div class="mt-2 space-y-2">
-            <div v-for="(lang, i) in profile.languages" :key="i" class="flex gap-2">
-              <UInput v-model="lang.name" placeholder="name" class="flex-1" />
-              <UInput v-model="lang.version" placeholder="version" />
-              <UButton color="red" variant="ghost" icon="i-lucide-x" @click="profile.languages.splice(i, 1)" />
-            </div>
-            <UButton size="xs" variant="soft" icon="i-lucide-plus"
-              @click="profile.languages.push({ name: '', version: null })">Add language</UButton>
-          </div>
-        </details>
-
-        <details open>
-          <summary class="font-medium">Frameworks</summary>
-          <div class="mt-2 space-y-2">
-            <div v-for="(fw, i) in profile.frameworks" :key="i" class="flex gap-2">
-              <UInput v-model="fw.name" placeholder="name" class="flex-1" />
-              <UInput v-model="fw.version" placeholder="version" />
-              <UButton color="red" variant="ghost" icon="i-lucide-x" @click="profile.frameworks.splice(i, 1)" />
-            </div>
-            <UButton size="xs" variant="soft" icon="i-lucide-plus"
-              @click="profile.frameworks.push({ name: '', version: null })">Add framework</UButton>
-          </div>
-        </details>
-
-        <details>
-          <summary class="font-medium">Packages</summary>
-          <div class="mt-2 space-y-2">
-            <div v-for="(pkg, i) in profile.packages" :key="i" class="flex gap-2">
-              <UInput v-model="pkg.name" placeholder="name" class="flex-1" />
-              <UInput v-model="pkg.version" placeholder="version" />
-              <UButton color="red" variant="ghost" icon="i-lucide-x" @click="profile.packages.splice(i, 1)" />
-            </div>
-            <UButton size="xs" variant="soft" icon="i-lucide-plus"
-              @click="profile.packages.push({ name: '', version: null, alternatives: [] })">Add package</UButton>
-          </div>
-        </details>
+        <EditableList
+          v-model="profile.languages"
+          label="Languages"
+          placeholder="Add language (e.g. Python 3.12)"
+        />
+        <EditableList
+          v-model="profile.frameworks"
+          label="Frameworks"
+          placeholder="Add framework (e.g. Django 4.2)"
+        />
+        <EditableList
+          v-model="profile.packages"
+          label="Packages"
+          placeholder="Add package (e.g. requests)"
+          with-alternatives
+        />
 
         <div>
           <label class="font-medium block mb-1">Important information</label>
