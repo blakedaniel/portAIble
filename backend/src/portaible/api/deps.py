@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..config import settings
 from ..domain import ExtractionKind
 from ..infrastructure.db import session_scope
+from ..infrastructure.extractors.github_extractor import GithubSourceExtractor
 from ..infrastructure.extractors.zip_extractor import ZipExtractor
 from ..infrastructure.llm.dspy_analyzer import DSPySourceAnalyzer
 from ..infrastructure.llm.dspy_decisions import DSPyDesignDecisions
@@ -53,8 +54,16 @@ def get_job_repo(db: AsyncSession = Depends(get_db_session)) -> JobRepositoryPor
 
 
 def get_extractors() -> dict[ExtractionKind, SourceExtractorPort]:
-    # Phase 1: only ZIP. GitHub adapters added in Phase 5.
-    return {ExtractionKind.ZIP: ZipExtractor(workspace_root=Path(settings.workspace_dir))}
+    workspace = Path(settings.workspace_dir)
+    return {
+        ExtractionKind.ZIP: ZipExtractor(workspace_root=workspace),
+        ExtractionKind.GITHUB_PUBLIC: GithubSourceExtractor(
+            kind=ExtractionKind.GITHUB_PUBLIC, workspace_root=workspace,
+        ),
+        ExtractionKind.GITHUB_PRIVATE: GithubSourceExtractor(
+            kind=ExtractionKind.GITHUB_PRIVATE, workspace_root=workspace,
+        ),
+    }
 
 
 def get_source_analyzer() -> SourceAnalyzerPort:

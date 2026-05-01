@@ -123,6 +123,9 @@ export const useApi = () => {
       })
     },
 
+    extractGithub: (sid: string, body: { url: string; ref?: string | null; pat?: string | null; kind: 'public' | 'private' }) =>
+      $post<{ job_id: string }>(`/api/sessions/${sid}/source/github`, body),
+
     analyze: (sid: string) => $post<{ job_id: string }>(`/api/sessions/${sid}/analyze`),
     getJob: (sid: string, jid: string) =>
       $get<{ id: string; kind: string; status: string; progress_percentage: number; progress_message: string; error: string | null }>(
