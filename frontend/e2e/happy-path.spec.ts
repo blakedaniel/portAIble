@@ -170,12 +170,14 @@ test('full porting workflow up to assembled prompt', async ({ page }) => {
 
   // Build the prompt
   await page.locator('button', { hasText: /Build prompt/ }).click()
-  // The assembled prompt renders inside a <pre> inside the prompt UCard.
-  const promptPre = page.locator('pre.whitespace-pre-wrap').first()
-  await expect(promptPre).toContainText(/Source Profile/i, { timeout: 15_000 })
-  await expect(promptPre).toContainText(/Destination Profile/i)
+  // The assembled prompt renders as styled markdown inside a .prose-prompt div.
+  const prompt = page.locator('.prose-prompt')
+  await expect(prompt).toContainText(/Source Profile/i, { timeout: 15_000 })
+  await expect(prompt).toContainText(/Destination Profile/i)
   // The bundled prompt-bank/transitions/django-springboot.md should be spliced in.
-  await expect(promptPre).toContainText(/Django.*Spring Boot/i)
+  await expect(prompt).toContainText(/Django.*Spring Boot/i)
   // Decisions answered are spliced in as a "Design Decisions" section.
-  await expect(promptPre).toContainText(/Design Decisions/i)
+  await expect(prompt).toContainText(/Design Decisions/i)
+  // Markdown actually rendered (not raw '###'): a real <h3> exists inside the prose container.
+  await expect(prompt.locator('h3').first()).toBeVisible()
 })
