@@ -103,7 +103,11 @@ export const useApi = () => {
       })
     },
 
-    analyze: (sid: string) => $post<Session>(`/api/sessions/${sid}/analyze`),
+    analyze: (sid: string) => $post<{ job_id: string }>(`/api/sessions/${sid}/analyze`),
+    getJob: (sid: string, jid: string) =>
+      $get<{ id: string; kind: string; status: string; progress_percentage: number; progress_message: string; error: string | null }>(
+        `/api/sessions/${sid}/jobs/${jid}`,
+      ),
 
     confirmSource: (sid: string) => $post<Session>(`/api/sessions/${sid}/profiles/source/confirm`),
     suggestDestination: (sid: string, target_hint: string | null) =>

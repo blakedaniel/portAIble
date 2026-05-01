@@ -56,8 +56,8 @@ def test_full_phase1_flow(client: TestClient, _workspace_root: Path):
     assert (src_dir / "manage.py").exists()
     assert (src_dir / "myapp" / "models.py").exists()
 
-    # 3. Analyze (FakeSourceAnalyzer canned response)
-    resp = client.post(f"/api/sessions/{sid}/analyze")
+    # 3. Analyze synchronously (background flow has its own test).
+    resp = client.post(f"/api/sessions/{sid}/analyze/sync")
     assert resp.status_code == 200, resp.text
     body = resp.json()
     assert body["status"] == "analyzed"

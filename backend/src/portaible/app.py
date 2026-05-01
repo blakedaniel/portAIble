@@ -9,6 +9,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .api import jobs as jobs_router
 from .api import pipeline as pipeline_router
 from .api import profiles as profiles_router
 from .api import prompt as prompt_router
@@ -60,6 +61,7 @@ def create_app() -> FastAPI:
     app.include_router(sessions_router.router)
     app.include_router(source_router.router)
     app.include_router(profiles_router.router)
+    app.include_router(jobs_router.router)
     app.include_router(prompt_router.router)
     app.include_router(pipeline_router.router)
     app.include_router(prompt_bank_router.router)

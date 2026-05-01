@@ -14,6 +14,8 @@ os.environ["WORKSPACE_DIR"] = _TMP
 os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{Path(_TMP) / 'test.db'}"
 os.environ["AI_PIPELINE_URL"] = "http://test-ai-pipeline.local"
 os.environ["PROMPT_BANK_DIR"] = str(Path(__file__).resolve().parents[2] / "prompt-bank")
+# Use the canned FakeSourceAnalyzer in tests — keeps things hermetic (no Ollama).
+os.environ["USE_FAKE_ANALYZER"] = "true"
 
 
 @pytest.fixture(scope="session", autouse=True)

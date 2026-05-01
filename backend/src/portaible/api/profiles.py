@@ -1,9 +1,12 @@
-"""Profile endpoints — analyze, read, update, confirm for source + destination."""
+"""Profile endpoints — analyze (background job), read, update, confirm for source + destination."""
 
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from ..infrastructure.db import session_scope
+from ..infrastructure.repos.sqlite_session_repo import SqliteSessionRepository
+from ..ports import JobKind
 from ..usecases import (
     AnalyzeSourceUseCase,
     ConfirmDestinationProfileUseCase,
@@ -12,19 +15,44 @@ from ..usecases import (
     UpdateDestinationProfileUseCase,
     UpdateSourceProfileUseCase,
 )
-from .deps import get_session_repo, get_source_analyzer
-from .schemas import DestinationProfile, Session, SourceProfile, SuggestDestinationRequest
+from .deps import get_job_registry, get_session_repo, get_source_analyzer
+from .schemas import DestinationProfile, JobIdResponse, Session, SourceProfile, SuggestDestinationRequest
 
 router = APIRouter(prefix="/api/sessions/{session_id}", tags=["profiles"])
 
 
-@router.post("/analyze", response_model=Session)
+@router.post("/analyze", response_model=JobIdResponse, status_code=202)
 async def analyze(
     session_id: str,
     repo=Depends(get_session_repo),
     analyzer=Depends(get_source_analyzer),
+    registry=Depends(get_job_registry),
 ):
-    """Phase 1: synchronous analyzer (FakeSourceAnalyzer). Phase 2 makes this a background job."""
+    """Kick off the SourceAnalyzer in the background. Poll /jobs/{job_id} for status."""
+    session = await repo.get(session_id)
+    if session is None:
+        raise HTTPException(404, f"session {session_id} not found")
+
+    async def body(on_progress):
+        await on_progress(5, "preparing analyzer inputs")
+        # Open a fresh DB session inside the background task — the request scope is gone.
+        async with session_scope() as db:
+            inner_repo = SqliteSessionRepository(db)
+            await on_progress(20, "running DSPy analyzer (LLM call)")
+            await AnalyzeSourceUseCase(sessions=inner_repo, analyzer=analyzer).execute(session_id)
+        await on_progress(95, "persisted source profile")
+
+    job = await registry.submit(session_id=session_id, kind=JobKind.ANALYZE, body=body)
+    return JobIdResponse(job_id=job.id)
+
+
+@router.post("/analyze/sync", response_model=Session, include_in_schema=False)
+async def analyze_sync(
+    session_id: str,
+    repo=Depends(get_session_repo),
+    analyzer=Depends(get_source_analyzer),
+):
+    """Synchronous analyze for tests / debugging — same use case, no background task."""
     try:
         return await AnalyzeSourceUseCase(sessions=repo, analyzer=analyzer).execute(session_id)
     except LookupError as e:

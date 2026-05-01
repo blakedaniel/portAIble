@@ -12,11 +12,13 @@ from ..config import settings
 from ..domain import ExtractionKind
 from ..infrastructure.db import session_scope
 from ..infrastructure.extractors.zip_extractor import ZipExtractor
+from ..infrastructure.llm.dspy_analyzer import DSPySourceAnalyzer
 from ..infrastructure.llm.fake_analyzer import FakeSourceAnalyzer
 from ..infrastructure.pipeline.http_pipeline import HttpAIPipeline
 from ..infrastructure.prompt_bank.filesystem_bank import FilesystemPromptBank
 from ..infrastructure.repos.sqlite_job_repo import SqliteJobRepository
 from ..infrastructure.repos.sqlite_session_repo import SqliteSessionRepository
+from ..jobs import JobRegistry
 from ..ports import (
     AIPipelinePort,
     JobRepositoryPort,
@@ -25,6 +27,13 @@ from ..ports import (
     SourceAnalyzerPort,
     SourceExtractorPort,
 )
+
+# Set USE_FAKE_ANALYZER=true in tests / local dev without Ollama.
+import os as _os
+_USE_FAKE_ANALYZER = _os.getenv("USE_FAKE_ANALYZER", "").lower() in ("1", "true", "yes")
+
+# Process-wide JobRegistry (in-process; jobs persist via SQLite).
+_job_registry = JobRegistry()
 
 
 async def get_db_session() -> AsyncIterator[AsyncSession]:
@@ -46,8 +55,12 @@ def get_extractors() -> dict[ExtractionKind, SourceExtractorPort]:
 
 
 def get_source_analyzer() -> SourceAnalyzerPort:
-    # Phase 1: fake analyzer. Replaced by DSPySourceAnalyzer in Phase 2.
-    return FakeSourceAnalyzer()
+    """Real DSPy analyzer in production; FakeSourceAnalyzer when USE_FAKE_ANALYZER=true."""
+    return FakeSourceAnalyzer() if _USE_FAKE_ANALYZER else DSPySourceAnalyzer()
+
+
+def get_job_registry() -> JobRegistry:
+    return _job_registry
 
 
 def get_prompt_bank() -> PromptBankPort:
