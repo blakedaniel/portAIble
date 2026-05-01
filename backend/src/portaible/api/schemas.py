@@ -34,6 +34,7 @@ __all__ = [
     "SessionListResponse",
     "SourceProfile",
     "SuggestDestinationRequest",
+    "UpdatePromptRequest",
 ]
 
 
@@ -46,6 +47,10 @@ class GithubExtractRequest(BaseModel):
 
 class SuggestDestinationRequest(BaseModel):
     target_hint: str | None = None
+
+
+class UpdatePromptRequest(BaseModel):
+    instructions: str
 
 
 class JobIdResponse(BaseModel):

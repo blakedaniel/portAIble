@@ -178,3 +178,31 @@ class BuildPromptUseCase:
         if session is None:
             raise LookupError(f"session {session_id} not found")
         return session
+
+
+@dataclass
+class UpdatePromptInstructionsUseCase:
+    """Replace the assembled prompt's instructions text with a user-edited version.
+
+    The prompt remains locked once the pipeline has accepted it (submitted/completed),
+    but stays editable in pipeline_failed so the user can fix-and-retry.
+    """
+
+    sessions: SessionRepositoryPort
+
+    async def execute(self, session_id: str, instructions: str) -> Session:
+        session = await self.sessions.get(session_id)
+        if session is None:
+            raise LookupError(f"session {session_id} not found")
+        if session.assembled_prompt is None:
+            raise ValueError("no assembled prompt to edit — build it first")
+        if session.status in {
+            SessionStatus.PIPELINE_SUBMITTED,
+            SessionStatus.PIPELINE_COMPLETED,
+        }:
+            raise ValueError("prompt is locked once submitted to the AI Pipeline")
+        if not instructions.strip():
+            raise ValueError("instructions cannot be empty")
+        session.assembled_prompt.instructions = instructions
+        await self.sessions.save(session)
+        return session

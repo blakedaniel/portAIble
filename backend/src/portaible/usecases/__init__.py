@@ -1,7 +1,7 @@
 """Use cases — orchestrate ports per business operation. No FastAPI / no infrastructure imports."""
 
 from .analyze_source import AnalyzeSourceUseCase
-from .build_prompt import BuildPromptUseCase
+from .build_prompt import BuildPromptUseCase, UpdatePromptInstructionsUseCase
 from .create_session import CreateSessionUseCase
 from .decisions import GenerateDesignDecisionsUseCase, SubmitDesignAnswersUseCase
 from .extract_source import ExtractSourceUseCase
@@ -32,5 +32,6 @@ __all__ = [
     "SubmitToPipelineUseCase",
     "SuggestDestinationUseCase",
     "UpdateDestinationProfileUseCase",
+    "UpdatePromptInstructionsUseCase",
     "UpdateSourceProfileUseCase",
 ]
