@@ -144,6 +144,17 @@ test('full porting workflow up to assembled prompt', async ({ page }) => {
   // Destination — suggest from source, then confirm
   await page.locator('button', { hasText: /^Suggest$/ }).click()
   await expect(page.locator('input[value="Spring Boot"]')).toBeVisible({ timeout: 15_000 })
+
+  // Inline-add affordance: type a new framework into the bottom draft input,
+  // press Enter, assert it shows up as an editable row above the draft row.
+  // The Frameworks <details> placeholder names the section, so the locator is stable.
+  const fwDraft = page.locator('input[placeholder*="Add framework"]')
+  await fwDraft.fill('Spring Security 6.0')
+  await fwDraft.press('Enter')
+  await expect(page.locator('input[value="Spring Security 6.0"]')).toBeVisible()
+  // The draft input should be cleared after a successful add.
+  await expect(fwDraft).toHaveValue('')
+
   await page.locator('button', { hasText: /Confirm \+ continue/ }).click()
   await page.waitForURL(`**/sessions/${sid}/decisions`)
 
